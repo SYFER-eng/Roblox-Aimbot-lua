@@ -8,27 +8,20 @@ local Camera = workspace.CurrentCamera
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local TitleLabel = Instance.new("TextLabel")
-local AimbotButton = Instance.new("TextButton")
+local AimbotRightButton = Instance.new("TextButton")
+local AimbotLeftButton = Instance.new("TextButton")
 local ESPButton = Instance.new("TextButton")
 
 -- GUI Setup
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.Enabled = false -- Start hidden
 
-MainFrame.Size = UDim2.new(0, 200, 0, 150)
-MainFrame.Position = UDim2.new(0.5, -100, 0.5, -75)
+MainFrame.Size = UDim2.new(0, 200, 0, 200) -- Increased height for new button
+MainFrame.Position = UDim2.new(0.5, -100, 0.5, -100)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.Parent = ScreenGui
 
--- Title
-TitleLabel.Size = UDim2.new(0.8, 0, 0.2, 0)
-TitleLabel.Position = UDim2.new(0.1, 0, 0.05, 0)
-TitleLabel.Text = "Syfer's Menu"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.TextSize = 18
--- Add this after MainFrame creation and before the Title setup
+-- Make GUI Draggable
 local Dragging = false
 local DragStart = nil
 local StartPosition = nil
@@ -59,27 +52,44 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
+-- Title
+TitleLabel.Size = UDim2.new(0.8, 0, 0.2, 0)
+TitleLabel.Position = UDim2.new(0.1, 0, 0.05, 0)
+TitleLabel.Text = "Syfer's Menu"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 18
 TitleLabel.Parent = MainFrame
 
--- Aimbot Button
-AimbotButton.Size = UDim2.new(0.8, 0, 0.25, 0)
-AimbotButton.Position = UDim2.new(0.1, 0, 0.3, 0)
-AimbotButton.Text = "Aimbot: OFF"
-AimbotButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-AimbotButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-AimbotButton.Parent = MainFrame
+-- Aimbot Right Button
+AimbotRightButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+AimbotRightButton.Position = UDim2.new(0.1, 0, 0.3, 0)
+AimbotRightButton.Text = "Aimbot Right: OFF"
+AimbotRightButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+AimbotRightButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AimbotRightButton.Parent = MainFrame
+
+-- Aimbot Left Button
+AimbotLeftButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+AimbotLeftButton.Position = UDim2.new(0.1, 0, 0.5, 0)
+AimbotLeftButton.Text = "Aimbot Left: OFF"
+AimbotLeftButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+AimbotLeftButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AimbotLeftButton.Parent = MainFrame
 
 -- ESP Button
-ESPButton.Size = UDim2.new(0.8, 0, 0.25, 0)
-ESPButton.Position = UDim2.new(0.1, 0, 0.6, 0)
+ESPButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+ESPButton.Position = UDim2.new(0.1, 0, 0.7, 0)
 ESPButton.Text = "ESP: OFF"
 ESPButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 ESPButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ESPButton.Parent = MainFrame
 
--- ESP Storage
+-- Variables
 local ESPObjects = {}
-local AimbotEnabled = false
+local AimbotRightEnabled = false
+local AimbotLeftEnabled = false
 local ESPEnabled = false
 
 -- Create ESP Function
@@ -131,10 +141,16 @@ local function GetClosestEnemy()
 end
 
 -- Button Handlers
-AimbotButton.MouseButton1Click:Connect(function()
-    AimbotEnabled = not AimbotEnabled
-    AimbotButton.Text = "Aimbot: " .. (AimbotEnabled and "ON" or "OFF")
-    AimbotButton.BackgroundColor3 = AimbotEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+AimbotRightButton.MouseButton1Click:Connect(function()
+    AimbotRightEnabled = not AimbotRightEnabled
+    AimbotRightButton.Text = "Aimbot Right: " .. (AimbotRightEnabled and "ON" or "OFF")
+    AimbotRightButton.BackgroundColor3 = AimbotRightEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+end)
+
+AimbotLeftButton.MouseButton1Click:Connect(function()
+    AimbotLeftEnabled = not AimbotLeftEnabled
+    AimbotLeftButton.Text = "Aimbot Left: " .. (AimbotLeftEnabled and "ON" or "OFF")
+    AimbotLeftButton.BackgroundColor3 = AimbotLeftEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
 end)
 
 ESPButton.MouseButton1Click:Connect(function()
@@ -145,8 +161,16 @@ end)
 
 -- Main Loop
 RunService.RenderStepped:Connect(function()
-    -- Aimbot
-    if AimbotEnabled and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+    -- Right Click Aimbot
+    if AimbotRightEnabled and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+        local target = GetClosestEnemy()
+        if target then
+            AimAt(target)
+        end
+    end
+    
+    -- Left Click Aimbot
+    if AimbotLeftEnabled and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
         local target = GetClosestEnemy()
         if target then
             AimAt(target)
