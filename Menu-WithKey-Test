@@ -1,0 +1,168 @@
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Syfer-eng Key", HidePremium = false, SaveConfig = true, introtext = "Syfer-eng Key"})
+
+OrionLib:MakeNotification({
+    Name = "Syfer-eng's Menu",
+    Content = "Correct key",
+    Image = "rbxassetid://4483345998",
+    Time = 5
+})
+
+_G.Key = "8230"
+_G.Keyimput = "string"
+
+local Aimbot = {
+    Enabled = false,
+    TargetPart = "Head",
+    TeamCheck = false,
+    WallCheck = false,
+    FOV = 90
+}
+
+function MakeScriptHub()
+    local Window = OrionLib:MakeWindow({Name = "Syfer-eng Menu", HidePremium = false, SaveConfig = true, introtext = "Syfer-eng Menu"})
+    
+    local MainTab = Window:MakeTab({
+        Name = "Combat",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    MainTab:AddToggle({
+        Name = "Aimbot",
+        Default = false,
+        Callback = function(Value)
+            Aimbot.Enabled = Value
+            
+            if Aimbot.Enabled then
+                game:GetService("RunService").RenderStepped:Connect(function()
+                    if Aimbot.Enabled then
+                        local closestPlayer = nil
+                        local shortestDistance = math.huge
+                        local localPlayer = game:GetService("Players").LocalPlayer
+                        
+                        for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+                            if player ~= localPlayer and 
+                               player.Character and 
+                               player.Character:FindFirstChild(Aimbot.TargetPart) then
+                                
+                                if Aimbot.TeamCheck and player.Team == localPlayer.Team then
+                                    continue
+                                end
+                                
+                                if Aimbot.WallCheck then
+                                    local rayOrigin = workspace.CurrentCamera.CFrame.Position
+                                    local rayDirection = (player.Character[Aimbot.TargetPart].Position - rayOrigin).Unit
+                                    local raycastParams = RaycastParams.new()
+                                    raycastParams.FilterDescendantsInstances = {localPlayer.Character}
+                                    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                                    
+                                    local raycastResult = workspace:Raycast(rayOrigin, rayDirection * 1000, raycastParams)
+                                    if raycastResult and raycastResult.Instance and not raycastResult.Instance:IsDescendantOf(player.Character) then
+                                        continue
+                                    end
+                                end
+                                
+                                local targetPos = player.Character[Aimbot.TargetPart].Position
+                                local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(targetPos)
+                                
+                                if onScreen then
+                                    local distance = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(localPlayer:GetMouse().X, localPlayer:GetMouse().Y)).Magnitude
+                                    
+                                    if distance < shortestDistance then
+                                        closestPlayer = player
+                                        shortestDistance = distance
+                                    end
+                                end
+                            end
+                        end
+                        
+                        if closestPlayer and 
+                           closestPlayer.Character and 
+                           closestPlayer.Character:FindFirstChild(Aimbot.TargetPart) then
+                            
+                            local targetPos = closestPlayer.Character[Aimbot.TargetPart].Position
+                            local camera = workspace.CurrentCamera
+                            camera.CFrame = CFrame.new(camera.CFrame.Position, targetPos)
+                        end
+                    end
+                end)
+            end
+        end
+    })
+
+    MainTab:AddToggle({
+        Name = "Team Check",
+        Default = false,
+        Callback = function(Value)
+            Aimbot.TeamCheck = Value
+        end
+    })
+
+    MainTab:AddToggle({
+        Name = "Wall Check",
+        Default = false,
+        Callback = function(Value)
+            Aimbot.WallCheck = Value
+        end
+    })
+
+    MainTab:AddSlider({
+        Name = "Aimbot FOV",
+        Min = 30,
+        Max = 360,
+        Default = 90,
+        Color = Color3.fromRGB(255, 255, 255),
+        Increment = 1,
+        ValueName = "degrees",
+        Callback = function(Value)
+            Aimbot.FOV = Value
+        end    
+    })
+end
+
+function CorrectKeyNotification()
+    OrionLib:MakeNotification({
+        Name = "Correct Key!",
+        Content = "Key Correct :)",
+        Image = "rbxassetid://4483345998",
+        Time = 5
+    })
+end
+
+function IncorrectKeyNotification()
+    OrionLib:MakeNotification({
+        Name = "Incorrect Key!",
+        Content = "Key Incorrect :(",
+        Image = "rbxassetid://4483345998",
+        Time = 5
+    })
+end
+
+local Tab = Window:MakeTab({
+    Name = "Key",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+Tab:AddTextbox({
+    Name = "Enter Key",
+    Default = "Enter Key",
+    TextDisappear = true,
+    Callback = function(Value)
+        _G.Keyimput = Value
+    end   
+})
+
+Tab:AddButton({
+    Name = "Check key!",
+    Callback = function()
+        if _G.Keyimput == _G.Key then
+            CorrectKeyNotification()
+            MakeScriptHub()
+            OrionLib:Destroy()
+        else
+            IncorrectKeyNotification()
+        end
+    end    
+})
