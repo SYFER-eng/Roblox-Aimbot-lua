@@ -1,0 +1,104 @@
+-- Configuration
+local CONFIG = {
+    DISTANCE = Value3,
+    HEIGHT = Value2,
+    SPEED = Value1,
+    COLORS = {
+        PRIMARY = Color3.fromRGB(102, 45, 145),
+        SUCCESS = Color3.fromRGB(65, 255, 0),
+        HIGHLIGHT = Color3.fromRGB(255, 255, 255)
+    }
+}
+
+-- Load required libraries
+local function loadLibraries()
+    local redzLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/LibraryV2/main/redzLib"))()
+    local notifyLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/laagginq/ui-libraries/main/dxhooknotify/src.lua", true))()
+    return redzLib, notifyLib
+end
+
+-- Initialize UI window
+local function createWindow()
+    return MakeWindow({
+        Hub = {
+            Title = "Syfer-eng Menu",
+            Animation = "By Syfer-eng"
+        },
+        Key = {
+            KeySystem = false,
+            Title = "Key System",
+            Description = "No Scope 2021",
+            KeyLink = "https://raw.githubusercontent.com/dqtixz/key-system-mdfgbgk-dwflgk-nerrnmtr/main/ryj11374973493528790352797537297%20246949%2054795ergjternbrt%20j",
+            Keys = {"keyjgfeihefnm22", "Projeto"},
+            Notifi = {
+                Notifications = true,
+                CorrectKey = "Running the Script...",
+                Incorrectkey = "The key is incorrect",
+                KeyLink = "Copied to Clipboard"
+            }
+        }
+    })
+end
+
+-- Spin functionality
+local function enableSpin(power)
+    -- Disable collisions
+    local function disableCollisions()
+        local character = game.Players.LocalPlayer.Character
+        if not character then return end
+        
+        local parts = {
+            character.Head,
+            character.Torso,
+            character["Left Leg"],
+            character["Right Leg"]
+        }
+        
+        for _, part in ipairs(parts) do
+            if part then part.CanCollide = false end
+        end
+    end
+
+    -- Connect collision disable to RunService
+    game:GetService('RunService').Stepped:Connect(disableCollisions)
+
+    -- Create and configure body thrust
+    local function createBodyThrust()
+        local character = game.Players.LocalPlayer.Character
+        if not character then return end
+
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        if not rootPart then return end
+
+        local thrust = Instance.new("BodyThrust")
+        thrust.Parent = rootPart
+        thrust.Force = Vector3.new(power, 0, power)
+        thrust.Location = rootPart.Position
+    end
+
+    -- Add small delay then create thrust
+    wait(0.1)
+    createBodyThrust()
+end
+
+-- Main execution
+local function main()
+    local redzLib, notifyLib = loadLibraries()
+    local window = createWindow()
+
+    -- Add spin button
+    AddButton(Main, {
+        Name = "Spin",
+        Callback = function()
+            local SPIN_POWER = 1000
+            enableSpin(SPIN_POWER)
+            notifyLib:Notify("Spin Enabled", "Spin power set to " .. SPIN_POWER, 3)
+        end
+    })
+end
+
+-- Error handling wrapper
+local success, error = pcall(main)
+if not success then
+    warn("Failed to execute script: " .. tostring(error))
+end
